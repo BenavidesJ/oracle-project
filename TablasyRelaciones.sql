@@ -1,0 +1,150 @@
+-- =========================================================
+-- SCRIPT DE CREACIÓN DE TABLAS Y RELACIONES
+-- =========================================================
+
+-- 1. CREACIÓN DE TABLA TVET_CLIENTES
+CREATE TABLE TVET_CLIENTES (
+    TNU_IdCliente        NUMBER(10)       NOT NULL,
+    TC_Nombre            VARCHAR2(100)    NOT NULL,
+    TC_Direccion         VARCHAR2(300),
+    TC_NumTelefono       VARCHAR2(50),
+    TC_CorreoElectronico VARCHAR2(100),
+    CONSTRAINT PK_TVET_CLIENTES 
+        PRIMARY KEY (TNU_IdCliente)
+);
+
+-- 2. CREACIÓN DE TABLA TVET_MASCOTAS
+CREATE TABLE TVET_MASCOTAS (
+    TNU_IdMascota        NUMBER(10)       NOT NULL,
+    TC_NombreMascota     VARCHAR2(100)    NOT NULL,
+    CONSTRAINT PK_TVET_MASCOTAS
+        PRIMARY KEY (TNU_IdMascota)
+);
+
+-- 3. CREACIÓN DE TABLA TVET_DETALLEMASCOTA
+CREATE TABLE TVET_DETALLEMASCOTA (
+    TNU_IdCliente        NUMBER(10)       NOT NULL,
+    TNU_IdMascota        NUMBER(10)       NOT NULL,
+    TC_Raza              VARCHAR2(100),
+    DC_Peso              NUMBER(12, 2),
+    TC_Color             VARCHAR2(50),
+    CONSTRAINT PK_TVET_DETALLEMASCOTA 
+        PRIMARY KEY (TNU_IdCliente, TNU_IdMascota),
+    CONSTRAINT FK_DETALLEMASCOTA_CLIENTES 
+        FOREIGN KEY (TNU_IdCliente) REFERENCES TVET_CLIENTES(TNU_IdCliente),
+    CONSTRAINT FK_DETALLEMASCOTA_MASCOTAS
+        FOREIGN KEY (TNU_IdMascota) REFERENCES TVET_MASCOTAS(TNU_IdMascota)
+);
+
+-- 4. CREACIÓN DE TABLA TVET_CITAS
+CREATE TABLE TVET_CITAS (
+    TNU_IdCita           NUMBER(10)       NOT NULL,
+    TNU_IdCliente        NUMBER(10)       NOT NULL,
+    TNU_IdMascota        NUMBER(10)       NOT NULL,
+    TFE_Fecha            DATE,
+    CONSTRAINT PK_TVET_CITAS 
+        PRIMARY KEY (TNU_IdCita),
+    CONSTRAINT FK_CITAS_CLIENTES 
+        FOREIGN KEY (TNU_IdCliente) REFERENCES TVET_CLIENTES(TNU_IdCliente),
+    CONSTRAINT FK_CITAS_MASCOTAS 
+        FOREIGN KEY (TNU_IdMascota) REFERENCES TVET_MASCOTAS(TNU_IdMascota)
+);
+
+-- 5. CREACIÓN DE TABLA TVET_DIAGNOSTICO
+CREATE TABLE TVET_DIAGNOSTICO (
+    TNU_IdDiagnostico    NUMBER(10)       NOT NULL,
+    TNU_IdCita           NUMBER(10)       NOT NULL,
+    TC_Diagnostico       VARCHAR2(300),
+    CONSTRAINT PK_TVET_DIAGNOSTICO
+        PRIMARY KEY (TNU_IdDiagnostico),
+    CONSTRAINT FK_DIAGNOSTICO_CITAS
+        FOREIGN KEY (TNU_IdCita) REFERENCES TVET_CITAS(TNU_IdCita)
+);
+
+-- =========================================================
+-- 1. CREACIÓN DE SECUENCIAS
+-- =========================================================
+CREATE SEQUENCE SEQ_TVET_CLIENTES
+  START WITH 1
+  INCREMENT BY 1
+  NOMAXVALUE
+  NOCYCLE;
+
+CREATE SEQUENCE SEQ_TVET_MASCOTAS
+  START WITH 1
+  INCREMENT BY 1
+  NOMAXVALUE
+  NOCYCLE;
+
+CREATE SEQUENCE SEQ_TVET_CITAS
+  START WITH 1
+  INCREMENT BY 1
+  NOMAXVALUE
+  NOCYCLE;
+
+CREATE SEQUENCE SEQ_TVET_DIAGNOSTICO
+  START WITH 1
+  INCREMENT BY 1
+  NOMAXVALUE
+  NOCYCLE;
+
+-- =========================================================
+-- 2. CREACIÓN DE TRIGGERS PARA ASIGNAR LAS PK CON AUTOINCREMENT
+-- =========================================================
+
+-- TRIGGER PARA TVET_CLIENTES
+CREATE OR REPLACE TRIGGER TRG_TVET_CLIENTES_ID
+BEFORE INSERT ON TVET_CLIENTES
+FOR EACH ROW
+BEGIN
+  IF :NEW.TNU_IdCliente IS NULL THEN
+    SELECT SEQ_TVET_CLIENTES.NEXTVAL
+      INTO :NEW.TNU_IdCliente
+      FROM DUAL;
+  END IF;
+END;
+/
+-- ---------------------------------------------------------
+
+-- TRIGGER PARA TVET_MASCOTAS
+CREATE OR REPLACE TRIGGER TRG_TVET_MASCOTAS_ID
+BEFORE INSERT ON TVET_MASCOTAS
+FOR EACH ROW
+BEGIN
+  IF :NEW.TNU_IdMascota IS NULL THEN
+    SELECT SEQ_TVET_MASCOTAS.NEXTVAL
+      INTO :NEW.TNU_IdMascota
+      FROM DUAL;
+  END IF;
+END;
+/
+-- ---------------------------------------------------------
+
+-- TRIGGER PARA TVET_CITAS
+CREATE OR REPLACE TRIGGER TRG_TVET_CITAS_ID
+BEFORE INSERT ON TVET_CITAS
+FOR EACH ROW
+BEGIN
+  IF :NEW.TNU_IdCita IS NULL THEN
+    SELECT SEQ_TVET_CITAS.NEXTVAL
+      INTO :NEW.TNU_IdCita
+      FROM DUAL;
+  END IF;
+END;
+/
+-- ---------------------------------------------------------
+
+-- TRIGGER PARA TVET_DIAGNOSTICO
+CREATE OR REPLACE TRIGGER TRG_TVET_DIAGNOSTICO_ID
+BEFORE INSERT ON TVET_DIAGNOSTICO
+FOR EACH ROW
+BEGIN
+  IF :NEW.TNU_IdDiagnostico IS NULL THEN
+    SELECT SEQ_TVET_DIAGNOSTICO.NEXTVAL
+      INTO :NEW.TNU_IdDiagnostico
+      FROM DUAL;
+  END IF;
+END;
+/
+-- ---------------------------------------------------------
+
